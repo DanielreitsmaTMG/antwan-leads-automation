@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS leads (
     contact_role TEXT,
     source TEXT DEFAULT 'apify_google_maps',
     place_id TEXT UNIQUE,
+    email_subject TEXT,
+    email_body TEXT,
     status TEXT NOT NULL DEFAULT 'new',  -- new | contacted | replied | not_interested | won
     notes TEXT,
     scraped_at TIMESTAMPTZ NOT NULL DEFAULT now(),

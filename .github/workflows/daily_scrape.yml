@@ -22,4 +22,5 @@ jobs:
         env:
           APIFY_API_TOKEN: ${{ secrets.APIFY_API_TOKEN }}
           NEON_CONNECTION_STRING: ${{ secrets.NEON_CONNECTION_STRING }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python systems/scrape_leads.py --limit 10

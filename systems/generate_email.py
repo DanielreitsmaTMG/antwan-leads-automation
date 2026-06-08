@@ -35,8 +35,10 @@ def build_message(lead: dict) -> dict:
         sender_email=SENDER_EMAIL,
     )
 
-    to_addr = lead.get("email") or ""
-    query = urllib.parse.urlencode({"subject": subject, "body": body}, quote_via=urllib.parse.quote)
-    mailto_url = f"mailto:{to_addr}?{query}"
+    return {"subject": subject, "body": body, "mailto_url": build_mailto(lead.get("email"), subject, body)}
 
-    return {"subject": subject, "body": body, "mailto_url": mailto_url}
+
+def build_mailto(to_addr: str, subject: str, body: str) -> str:
+    """Builds a mailto: URL from an already-generated subject/body (e.g. AI-personalized, stored in DB)."""
+    query = urllib.parse.urlencode({"subject": subject, "body": body}, quote_via=urllib.parse.quote)
+    return f"mailto:{to_addr or ''}?{query}"

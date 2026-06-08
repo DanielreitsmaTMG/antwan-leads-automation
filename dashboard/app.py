@@ -5,8 +5,9 @@ import sys
 import streamlit as st
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "systems"))
-from db import fetch_leads, update_lead_status  # noqa: E402
-from generate_email import build_message  # noqa: E402
+from db import fetch_leads, update_lead_status, save_email_message  # noqa: E402
+from generate_email import build_message, build_mailto  # noqa: E402
+from ai_personalize import generate_message  # noqa: E402
 
 PRIMARY = "#305544"   # Antwan donkergroen
 ACCENT = "#E28759"    # Antwan terracotta
@@ -56,14 +57,30 @@ for lead in leads:
             st.caption(f"Status: `{lead['status']}` · gescraped op {lead['scraped_at']}")
 
         with col2:
-            msg = build_message(lead)
-            st.markdown("**Voorgesteld bericht:**")
-            st.text_area("Bericht", value=msg["body"], height=220, key=f"msg_{lead['id']}", label_visibility="collapsed")
+            # AI-personalized message generated at scrape time; template as fallback
+            # for older leads that don't have one stored yet.
+            subject = lead.get("email_subject")
+            body = lead.get("email_body")
+            if not body:
+                fallback = build_message(lead)
+                subject, body = fallback["subject"], fallback["body"]
 
-            if lead.get("email"):
-                st.link_button("✉️ Open in mail-app", msg["mailto_url"], use_container_width=True)
-            else:
-                st.button("✉️ Geen e-mailadres bekend", disabled=True, use_container_width=True, key=f"noemail_{lead['id']}")
+            st.markdown("**Voorgesteld bericht (AI-gepersonaliseerd):**")
+            edited_body = st.text_area("Bericht", value=body, height=220, key=f"msg_{lead['id']}", label_visibility="collapsed")
+
+            col_a, col_b = st.columns(2)
+            with col_a:
+                if st.button("🔄 Nieuw AI-bericht genereren", key=f"regen_{lead['id']}", use_container_width=True):
+                    with st.spinner("Bericht genereren..."):
+                        new_msg = generate_message(lead)
+                        save_email_message(lead["id"], new_msg["subject"], new_msg["body"])
+                    st.rerun()
+            with col_b:
+                mailto_url = build_mailto(lead.get("email"), subject, edited_body)
+                if lead.get("email"):
+                    st.link_button("✉️ Open in mail-app", mailto_url, use_container_width=True)
+                else:
+                    st.button("✉️ Geen e-mailadres bekend", disabled=True, use_container_width=True, key=f"noemail_{lead['id']}")
 
             new_status = st.selectbox(
                 "Status bijwerken",

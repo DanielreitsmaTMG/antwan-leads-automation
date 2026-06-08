@@ -21,11 +21,11 @@ def init_schema():
 
 
 def insert_leads(leads):
-    """Insert leads, skipping duplicates by place_id. Returns number of new rows inserted."""
+    """Insert leads, skipping duplicates by place_id. Returns the newly inserted rows (with id)."""
     if not leads:
-        return 0
-    with get_connection() as conn, conn.cursor() as cur:
-        inserted = 0
+        return []
+    with get_connection() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        new_rows = []
         for lead in leads:
             cur.execute(
                 """
@@ -35,12 +35,24 @@ def insert_leads(leads):
                         %(website)s, %(email)s, %(contact_name)s, %(contact_role)s,
                         %(source)s, %(place_id)s)
                 ON CONFLICT (place_id) DO NOTHING
+                RETURNING *
                 """,
                 lead,
             )
-            inserted += cur.rowcount
+            row = cur.fetchone()
+            if row:
+                new_rows.append(dict(row))
         conn.commit()
-        return inserted
+        return new_rows
+
+
+def save_email_message(lead_id: int, subject: str, body: str):
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            "UPDATE leads SET email_subject = %s, email_body = %s WHERE id = %s",
+            (subject, body, lead_id),
+        )
+        conn.commit()
 
 
 def fetch_leads(status=None, limit=200):
