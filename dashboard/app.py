@@ -4,6 +4,13 @@ import sys
 
 import streamlit as st
 
+# Streamlit Cloud injects secrets into st.secrets, not into the process environment.
+# systems/ stays environment-agnostic (works locally, in GitHub Actions, and here)
+# by always reading os.environ — so mirror any matching secrets into it on startup.
+for _key in ("APIFY_API_TOKEN", "NEON_CONNECTION_STRING", "ANTHROPIC_API_KEY"):
+    if _key in st.secrets and _key not in os.environ:
+        os.environ[_key] = st.secrets[_key]
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "systems"))
 from db import fetch_leads, update_lead_status, save_email_message  # noqa: E402
 from generate_email import build_message, build_mailto  # noqa: E402
