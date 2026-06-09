@@ -39,6 +39,19 @@ def build_message(lead: dict) -> dict:
 
 
 def build_mailto(to_addr: str, subject: str, body: str) -> str:
-    """Builds a mailto: URL from an already-generated subject/body (e.g. AI-personalized, stored in DB)."""
+    """Bouwt een mailto: URL van een al gegenereerd subject/body."""
     query = urllib.parse.urlencode({"subject": subject, "body": body}, quote_via=urllib.parse.quote)
     return f"mailto:{to_addr or ''}?{query}"
+
+
+def build_whatsapp(phone: str, body: str) -> str:
+    """Bouwt een wa.me-link met een voorgesteld bericht. Converteert NL-nummers naar +31."""
+    if not phone:
+        return ""
+    digits = "".join(c for c in phone if c.isdigit())
+    if digits.startswith("0") and len(digits) >= 9:
+        digits = "31" + digits[1:]
+    elif not digits.startswith("31"):
+        digits = "31" + digits
+    text = urllib.parse.quote(body)
+    return f"https://wa.me/{digits}?text={text}"

@@ -55,6 +55,28 @@ def save_email_message(lead_id: int, subject: str, body: str):
         conn.commit()
 
 
+def save_score(lead_id: int, score: int):
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute("UPDATE leads SET score = %s WHERE id = %s", (score, lead_id))
+        conn.commit()
+
+
+def fetch_analytics():
+    """Geeft ruwe data terug voor de analysepagina."""
+    with get_connection() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        cur.execute("""
+            SELECT
+                status,
+                category,
+                score,
+                DATE_TRUNC('week', scraped_at) AS week,
+                scraped_at
+            FROM leads
+            ORDER BY scraped_at DESC
+        """)
+        return [dict(row) for row in cur.fetchall()]
+
+
 def fetch_leads(status=None, limit=200):
     query = "SELECT * FROM leads"
     params = ()

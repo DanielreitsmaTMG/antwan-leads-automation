@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS leads (
 CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
 CREATE INDEX IF NOT EXISTS idx_leads_scraped_at ON leads(scraped_at);
 
--- Safe migrations for existing tables
+-- Safe migrations voor bestaande tabellen
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS email_subject TEXT;
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS email_body TEXT;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS score INTEGER;

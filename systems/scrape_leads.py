@@ -11,8 +11,9 @@ import sys
 from apify_client import ApifyClient
 
 sys.path.insert(0, os.path.dirname(__file__))
-from db import insert_leads, init_schema, save_email_message  # noqa: E402
+from db import insert_leads, init_schema, save_email_message, save_score  # noqa: E402
 from ai_personalize import generate_message  # noqa: E402
+from ai_score import score_lead  # noqa: E402
 
 APIFY_ACTOR_ID = "compass/crawler-google-places"
 
@@ -97,9 +98,11 @@ def main():
     for lead in new_leads:
         msg = generate_message(lead)
         save_email_message(lead["id"], msg["subject"], msg["body"])
+        score, _ = score_lead(lead)
+        save_score(lead["id"], score)
+        print(f"  ✓ {lead['company_name']} (score: {score}/5)")
 
-    print(f"Scraped {len(items)} places, inserted {len(new_leads)} new leads "
-          f"(target {args.limit}), generated {len(new_leads)} personalized messages.")
+    print(f"\nGescraped: {len(items)} plekken | Nieuw ingevoegd: {len(new_leads)} leads | Doel: {args.limit}")
 
 
 if __name__ == "__main__":
