@@ -57,9 +57,13 @@ def check_login() -> bool:
         gebruikersnaam = st.text_input("E-mailadres", placeholder="info@antwan.nl", key="usr")
         wachtwoord     = st.text_input("Wachtwoord", type="password", key="pwd")
         if st.button("Inloggen", use_container_width=True):
-            juist_gebruiker  = st.secrets.get("DASHBOARD_USERNAME", "info@antwan.nl")
-            juist_wachtwoord = st.secrets.get("DASHBOARD_PASSWORD", "antwan2024")
-            if gebruikersnaam == juist_gebruiker and wachtwoord == juist_wachtwoord:
+            try:
+                juist_gebruiker  = str(st.secrets["DASHBOARD_USERNAME"]).strip()
+                juist_wachtwoord = str(st.secrets["DASHBOARD_PASSWORD"]).strip()
+            except Exception:
+                juist_gebruiker  = "info@antwan.nl"
+                juist_wachtwoord = "antwan2024"
+            if gebruikersnaam.strip() == juist_gebruiker and wachtwoord.strip() == juist_wachtwoord:
                 st.session_state.ingelogd = True
                 st.rerun()
             else:
