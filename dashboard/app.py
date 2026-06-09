@@ -54,14 +54,16 @@ def check_login() -> bool:
 
     col = st.columns([1, 1, 1])[1]
     with col:
-        wachtwoord = st.text_input("Wachtwoord", type="password", key="pwd")
+        gebruikersnaam = st.text_input("E-mailadres", placeholder="info@antwan.nl", key="usr")
+        wachtwoord     = st.text_input("Wachtwoord", type="password", key="pwd")
         if st.button("Inloggen", use_container_width=True):
-            juist = st.secrets.get("DASHBOARD_PASSWORD", "antwan2024")
-            if wachtwoord == juist:
+            juist_gebruiker  = st.secrets.get("DASHBOARD_USERNAME", "info@antwan.nl")
+            juist_wachtwoord = st.secrets.get("DASHBOARD_PASSWORD", "antwan2024")
+            if gebruikersnaam == juist_gebruiker and wachtwoord == juist_wachtwoord:
                 st.session_state.ingelogd = True
                 st.rerun()
             else:
-                st.error("Ongeldig wachtwoord — probeer het opnieuw.")
+                st.error("Ongeldig e-mailadres of wachtwoord — probeer het opnieuw.")
     return False
 
 
