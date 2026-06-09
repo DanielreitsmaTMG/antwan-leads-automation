@@ -14,11 +14,17 @@ contactgegevens (e-mail, telefoon, website).
 `systems/scrape_leads.py --limit 10`
 
 Gebruikt de Apify-actor `compass/crawler-google-places` (Google Maps Scraper) met:
-- Zoektermen: hotel, vakantiepark, camping, bedrijventerrein, ziekenhuis, zwembad,
-  VVE vastgoedbeheer, kantorenpark
-- Locatie: "Rhoon, Netherlands", straal 25km
+- Zoektermen (24 categorieën): hotel, vakantiepark, bungalowpark, camping,
+  recreatiecentrum, pretpark, ziekenhuis, verpleeghuis, verzorgingshuis,
+  woonzorgcentrum, zwembad, sportpark, sportcomplex, golfbaan, conferentiecentrum,
+  congrescentrum, bedrijventerrein, kantorenpark, landgoed, begraafplaats,
+  middelbare school, hogeschool, universiteit, VVE vastgoedbeheer
+- Locatie: "Rotterdam, Netherlands" — dekt automatisch ~40km rond Rhoon
+  (Rhoon ligt op 5km van Rotterdam; Rotterdam-regio beslaat het volledige doelgebied)
 - `scrapeContacts: true` zodat de actor de website van elk bedrijf bezoekt om
   e-mailadressen en (waar mogelijk) eigenaar/manager-namen op te halen
+- Eerdere fout opgelost: `SEARCH_RADIUS_M` werd niet meegegeven aan de actor waardoor
+  alleen de gemeente Rhoon (~16 km²) werd gescand. Nu opgelost via grotere locationQuery.
 
 Resultaten worden gededupliceerd op `place_id` en weggeschreven naar de Neon-tabel
 `leads` (zie `systems/schema.sql`). Alleen écht nieuwe bedrijven worden ingevoegd

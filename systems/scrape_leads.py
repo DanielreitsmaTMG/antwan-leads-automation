@@ -19,27 +19,45 @@ APIFY_ACTOR_ID = "compass/crawler-google-places"
 SEARCH_TERMS = [
     "hotel",
     "vakantiepark",
+    "bungalowpark",
     "camping",
-    "bedrijventerrein",
+    "recreatiecentrum",
+    "pretpark",
     "ziekenhuis",
+    "verpleeghuis",
+    "verzorgingshuis",
+    "woonzorgcentrum",
     "zwembad",
-    "VVE vastgoedbeheer",
+    "sportpark",
+    "sportcomplex",
+    "golfbaan",
+    "conferentiecentrum",
+    "congrescentrum",
+    "bedrijventerrein",
     "kantorenpark",
+    "landgoed",
+    "begraafplaats",
+    "middelbare school",
+    "hogeschool",
+    "universiteit",
+    "VVE vastgoedbeheer",
 ]
 
-# Rhoon, NL — ~25km radius
-SEARCH_LOCATION = "Rhoon, Netherlands"
-SEARCH_RADIUS_M = 25_000
+# Rotterdam als centrum dekt automatisch een straal van ~40km rond Rhoon
+# (Rhoon ligt 5km van Rotterdam; Rotterdam-gebied beslaat een groot gebied)
+SEARCH_LOCATION = "Rotterdam, Netherlands"
+SEARCH_RADIUS_KM = 40
 
 
 def run_actor(client: ApifyClient, max_results: int) -> list[dict]:
     run_input = {
         "searchStringsArray": SEARCH_TERMS,
         "locationQuery": SEARCH_LOCATION,
-        "maxCrawledPlacesPerSearch": max_results * 3,  # overshoot, dedupe later
+        "maxCrawledPlacesPerSearch": max_results * 2,
+        "maxImages": 0,
         "language": "nl",
         "skipClosedPlaces": True,
-        "scrapeContacts": True,  # actor visits the website to pull emails when available
+        "scrapeContacts": True,  # actor visits website to extract emails and contact names
     }
     run = client.actor(APIFY_ACTOR_ID).call(run_input=run_input)
     return list(client.dataset(run["defaultDatasetId"]).iterate_items())
