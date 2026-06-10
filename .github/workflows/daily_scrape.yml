@@ -18,6 +18,16 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Debug secrets (lengtes, geen waarden)
+        env:
+          APIFY_API_TOKEN: ${{ secrets.APIFY_API_TOKEN }}
+          NEON_CONNECTION_STRING: ${{ secrets.NEON_CONNECTION_STRING }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          echo "APIFY_API_TOKEN lengte: ${#APIFY_API_TOKEN}"
+          echo "NEON_CONNECTION_STRING lengte: ${#NEON_CONNECTION_STRING}"
+          echo "ANTHROPIC_API_KEY lengte: ${#ANTHROPIC_API_KEY}"
+
       - name: Run scraper
         env:
           APIFY_API_TOKEN: ${{ secrets.APIFY_API_TOKEN }}
