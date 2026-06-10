@@ -61,7 +61,11 @@ def run_actor(client: ApifyClient, max_results: int) -> list[dict]:
         "scrapeContacts": True,  # actor visits website to extract emails and contact names
     }
     run = client.actor(APIFY_ACTOR_ID).call(run_input=run_input)
-    return list(client.dataset(run["defaultDatasetId"]).iterate_items())
+    if isinstance(run, dict):
+        dataset_id = run["defaultDatasetId"]
+    else:
+        dataset_id = run.default_dataset_id
+    return list(client.dataset(dataset_id).iterate_items())
 
 
 def to_lead_row(item: dict) -> dict:
