@@ -7,6 +7,7 @@ Usage: python systems/scrape_leads.py [--limit 10]
 import argparse
 import os
 import sys
+from datetime import date
 
 from apify_client import ApifyClient
 
@@ -49,12 +50,28 @@ SEARCH_TERMS = [
 SEARCH_LOCATION = "Rotterdam, Netherlands"
 SEARCH_RADIUS_KM = 40
 
+# Kostenbeheersing (Apify free tier = $5/maand):
+# In plaats van alle 24 zoektermen elke run te draaien (duur, want scrapeContacts
+# bezoekt elke website), roteren we door groepen van zoektermen. Per run wordt
+# maar 1 groep gebruikt; over ~4 runs komen alle categorieën aan bod.
+ZOEKTERMEN_PER_GROEP = 6
+
+
+def selecteer_zoektermen_groep() -> list[str]:
+    """Kiest een vaste groep zoektermen op basis van het jaarnummer van de dag,
+    zodat opeenvolgende runs door alle categorieën heen rouleren."""
+    groepen = [SEARCH_TERMS[i:i + ZOEKTERMEN_PER_GROEP] for i in range(0, len(SEARCH_TERMS), ZOEKTERMEN_PER_GROEP)]
+    index = date.today().toordinal() % len(groepen)
+    return groepen[index]
+
 
 def run_actor(client: ApifyClient, max_results: int) -> list[dict]:
+    zoektermen = selecteer_zoektermen_groep()
+    print(f"Zoektermen in deze run: {', '.join(zoektermen)}")
     run_input = {
-        "searchStringsArray": SEARCH_TERMS,
+        "searchStringsArray": zoektermen,
         "locationQuery": SEARCH_LOCATION,
-        "maxCrawledPlacesPerSearch": max_results * 2,
+        "maxCrawledPlacesPerSearch": max_results,
         "maxImages": 0,
         "language": "nl",
         "skipClosedPlaces": True,

@@ -2,7 +2,7 @@ name: Daily lead scrape
 
 on:
   schedule:
-    - cron: "0 6 * * *"   # 06:00 UTC = 08:00 NL-tijd (zomertijd: 07:00 UTC)
+    - cron: "0 6 * * 2,5"   # dinsdag + vrijdag 06:00 UTC = 08:00 NL-tijd (zomertijd: 07:00 UTC)
   workflow_dispatch: {}
 
 jobs:
