@@ -1,5 +1,6 @@
 """Neon Postgres helpers for the lead automation. One job: read/write leads."""
 import os
+import time
 from typing import Optional
 
 import psycopg2
@@ -7,8 +8,20 @@ import psycopg2.extras
 
 
 def get_connection():
+    """Verbindt met Neon. Retried met oplopende wachttijd, want een 'koude'
+    Neon-database (auto-suspend na inactiviteit) heeft soms een paar
+    seconden nodig om wakker te worden voordat de eerste connectie lukt."""
     dsn = os.environ["NEON_CONNECTION_STRING"]
-    return psycopg2.connect(dsn)
+    laatste_fout = None
+    for poging, wachttijd in enumerate([0, 3, 6, 10], start=1):
+        if wachttijd:
+            time.sleep(wachttijd)
+        try:
+            return psycopg2.connect(dsn, connect_timeout=15)
+        except psycopg2.OperationalError as fout:
+            laatste_fout = fout
+            print(f"Verbindingspoging {poging} mislukt: {fout}")
+    raise laatste_fout
 
 
 def init_schema():
